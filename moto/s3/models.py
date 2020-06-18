@@ -792,7 +792,7 @@ class FakeBucket(BaseModel):
         for rule in rules:
             # Extract and validate actions from Lifecycle rule
             expiration = rule.get("Expiration")
-            transition = rule.get("Transition")
+            transition = rule.get("Transition") # TODO: This should be `Transistions` in the new version
 
             try:
                 top_level_prefix = (
@@ -811,7 +811,7 @@ class FakeBucket(BaseModel):
 
             nvt_noncurrent_days = None
             nvt_storage_class = None
-            if rule.get("NoncurrentVersionTransition") is not None:
+            if rule.get("NoncurrentVersionTransition") is not None:  # TODO: This should be `NoncurrentVersionTransitions` in the new version
                 if rule["NoncurrentVersionTransition"].get("NoncurrentDays") is None:
                     raise MalformedXML()
                 if rule["NoncurrentVersionTransition"].get("StorageClass") is None:
@@ -1268,6 +1268,10 @@ class S3Backend(BaseBackend):
     def get_bucket_policy(self, bucket_name):
         return self.get_bucket(bucket_name).policy
 
+    def get_bucket_lifecycle_configuration(self, Bucket):
+        bucket = self.get_bucket(Bucket)
+        return bucket.rules
+
     def set_bucket_policy(self, bucket_name, policy):
         self.get_bucket(bucket_name).policy = policy
 
@@ -1278,6 +1282,10 @@ class S3Backend(BaseBackend):
     def set_bucket_lifecycle(self, bucket_name, rules):
         bucket = self.get_bucket(bucket_name)
         bucket.set_lifecycle(rules)
+
+    def put_bucket_lifecycle_configuration(self, Bucket, LifecycleConfiguration):
+        bucket = self.get_bucket(Bucket)
+        bucket.set_lifecycle(LifecycleConfiguration["Rules"])
 
     def set_bucket_website_configuration(self, bucket_name, website_configuration):
         bucket = self.get_bucket(bucket_name)
